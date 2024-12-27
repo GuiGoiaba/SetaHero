@@ -102,6 +102,9 @@ int main(){
 			case ALLEGRO_KEY_ESCAPE:
 				fechar = true;
 				break;
+            case ALLEGRO_KEY_P:
+                fechar = true;
+                break;
             case ALLEGRO_KEY_UP:
                 teclas[cima] = true;
                 break;
@@ -147,11 +150,11 @@ int main(){
         }
         //JOGO
         if(redraw && al_is_event_queue_empty(fila_eventos)){
+            al_draw_rotated_bitmap(seta, jogador_borda_x / 2, jogador_borda_y / 2, ALTURA / 2, LARGURA / 2, jogador_grau * 3.14 / 180, 0);
+            al_draw_rotated_bitmap(inim, inim_x / 2, inim_y / 2, ALTURA, 308, inim_grau * 3.14 / 180, 0);
             al_flip_display();
             al_clear_to_color(al_map_rgb(192, 192, 192));
             al_draw_filled_rectangle(0, 270, ALTURA, 190, al_map_rgb(128, 128, 128));
-            al_draw_rotated_bitmap(seta, jogador_borda_x / 2, jogador_borda_y / 2, ALTURA / 2, LARGURA / 2, jogador_grau * 3.14 / 180, 0);
-            al_draw_rotated_bitmap(inim, inim_x / 2, inim_y / 2, ALTURA, 308, inim_grau * 3.14 / 180, 0);
         }
     }
     //FINALIZACAO DO PROGRAMA
