@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "objeto.h": "c"
+        "objeto.h": "c",
+        "allegro_primitives.h": "c"
     }
 }
