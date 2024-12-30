@@ -122,19 +122,20 @@ int main(){
                         seta_jogador = 3;
                         break;
             }
-            
-            if (seta.x < LARGURA / 2 + TAM_SETA / 2 &&
+                if (seta.x < LARGURA / 2 + TAM_SETA / 2 &&
                     seta.x > LARGURA / 2 - TAM_SETA / 2 &&
-                        seta.direcao == seta_jogador){
-                pontuacao += 50;
-                seta = criar_seta(LARGURA, ALTURA / 2 - TAM_SETA / 2);
-            }
-            else if (seta.x < LARGURA / 2 + TAM_SETA / 2 &&
+                    seta.direcao == seta_jogador)
+                    {
+                    pontuacao += 50;
+                    seta = criar_seta(LARGURA, ALTURA / 2 - TAM_SETA / 2);
+                }
+                else if (seta.x < LARGURA / 2 + TAM_SETA / 2 &&
                         seta.x > LARGURA / 2 - TAM_SETA / 2 &&
-                            seta.direcao != seta_jogador){
-                vidas--;
-                seta = criar_seta(LARGURA, ALTURA / 2 - TAM_SETA / 2);
-            }
+                        seta.direcao != seta_jogador)
+                        {
+                    vidas--;
+                    seta = criar_seta(LARGURA, ALTURA / 2 - TAM_SETA / 2);
+                }
             }
             if (vidas <= 0){
                 menu_final(pontuacao, nome_jogador);
