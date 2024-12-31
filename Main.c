@@ -7,7 +7,7 @@
 #define MAX_NOME 20
 #define TAM_SETA 50
 #define VELOCIDADE 0.5f
-#define MAX_INIMIGOS 2
+#define MAX_INIMIGOS 3
 
 // CONFIGURANDO A SETA
 typedef struct seta
@@ -21,10 +21,8 @@ int main()
     // Inicializa Allegro
     inicializa_allegro();
 
-    // Criação da tela
-    ALLEGRO_DISPLAY *janela = cria_tela();
-
     // Inicializa variáveis do jogo
+    ALLEGRO_DISPLAY *janela = cria_tela();
     ALLEGRO_BITMAP *seta_cima, *seta_baixo, *seta_direita, *seta_esquerda = NULL;
     ALLEGRO_EVENT_QUEUE *fila_eventos = al_create_event_queue();
     ALLEGRO_TIMER *timer = al_create_timer(1.0 / FPS);
@@ -39,23 +37,23 @@ int main()
     inicializa_recursos(&seta_cima, &seta_baixo, &seta_direita, &seta_esquerda);
     int seta_jogador = 0;
     int pontuacao = 0;
-    int seg = 0;
     int vidas = 3;
     int ult_pont = 0;
     float vel_inim = 1.0f;
-    bool fechar = false;
-    bool redraw = true;
 
     // Configuração de eventos
     configura_eventos(fila_eventos, janela, timer);
 
-    // Menu principal
-    int menu_option = 0;
-    bool dentro_menu = true;
+    // Configuração dos objetos
+    int opcao = 0;
+    int seg = 0;
     char nome_jogador[MAX_NOME] = "";
 
     srand(time(NULL));
     al_start_timer(timer);
+    bool fechar = false;
+    bool redraw = true;
+    bool dentro_menu = true;
 
     while (!fechar)
     {
@@ -67,15 +65,15 @@ int main()
             {
                 if (ev.keyboard.keycode == ALLEGRO_KEY_DOWN)
                 {
-                    menu_option = (menu_option + 1) % 2;
+                    opcao = (opcao + 1) % 2;
                 }
                 else if (ev.keyboard.keycode == ALLEGRO_KEY_UP)
                 {
-                    menu_option = (menu_option - 1 + 2) % 2;
+                    opcao = (opcao - 1 + 2) % 2;
                 }
                 else if (ev.keyboard.keycode == ALLEGRO_KEY_ENTER)
                 {
-                    if (menu_option == 0)
+                    if (opcao == 0)
                     {
                         dentro_menu = false;
                         insere_nome(nome_jogador);
@@ -90,7 +88,7 @@ int main()
                     }
                 }
             }
-            desenha_menu(menu_option, nome_jogador, ult_pont);
+            desenha_menu(opcao, nome_jogador, ult_pont);
         }
         else
         {
