@@ -3,6 +3,7 @@
         "objeto.h": "c",
         "allegro_primitives.h": "c",
         "allegro.h": "c",
-        "allegro_font.h": "c"
+        "allegro_font.h": "c",
+        "objetos.h": "c"
     }
 }

@@ -1,14 +1,5 @@
 #include "objetos.h"
 
-// GLOBAIS
-#define LARGURA 800
-#define ALTURA 600
-#define FPS 60
-#define MAX_NOME 20
-#define TAM_SETA 50
-#define VELOCIDADE 0.5f
-#define MAX_INIMIGOS 3
-
 // CONFIGURANDO A SETA
 typedef struct seta
 {

@@ -1,5 +1,12 @@
-#ifndef OBJETOS_H
-#define OBJETOS_H
+#ifndef objetos_h
+#define objetos_h
+#define LARGURA 800
+#define ALTURA 600
+#define FPS 60
+#define MAX_NOME 20
+#define TAM_SETA 50
+#define VELOCIDADE 0.5f
+#define MAX_INIMIGOS 3
 
 #include <stdio.h>
 #include <stdlib.h>
