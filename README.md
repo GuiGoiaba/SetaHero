@@ -12,6 +12,6 @@ Mais informações acerca em [Allegro 5 (A game programming library)](http://lib
 ## Compilação
 Se você estiver no Linux ou Mac e tiver o Allegro5 e o gcc instalados, execute compile.sh para compilar este código. Não tenho ideia de como isso funcionaria no Windows, embora o Allegro ofereça suporte ao Windows, então você pode tentar.
 ```
-* **Para o objeto**: gcc -c objetos.c -o objetos.o
-* **Para o main**: gcc -o prototipo Main.c objetos.o -lallegro -lallegro_primitives -lallegro_image -lallegro_ttf -lallegro_font
+gcc -c objetos.c -o objetos.o
+gcc -o prototipo Main.c objetos.o -lallegro -lallegro_primitives -lallegro_image -lallegro_ttf -lallegro_font
 ```
