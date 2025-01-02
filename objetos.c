@@ -2,8 +2,11 @@
 
 #define LARGURA 800
 #define ALTURA 600
+#define FPS 60
 #define MAX_NOME 20
 #define TAM_SETA 50
+#define VELOCIDADE 0.5f
+#define MAX_INIMIGOS 3
 
 typedef struct seta
 {
@@ -116,7 +119,7 @@ void insere_nome(char *nome_jogador)
     al_destroy_event_queue(input_teclado);
 }
 
-void menu_final(int pontuacao, char *nome_jogador)
+void pont_jogador(int pontuacao, char *nome_jogador)
 {
     ALLEGRO_FONT *fonte = al_create_builtin_font();
     al_clear_to_color(al_map_rgb(192, 192, 192));
@@ -167,11 +170,33 @@ void inicializa_recursos(ALLEGRO_BITMAP **seta_cima, ALLEGRO_BITMAP **seta_baixo
     }
 }
 
+void inicializa_jogo(ALLEGRO_DISPLAY **janela, ALLEGRO_BITMAP **seta_cima, ALLEGRO_BITMAP **seta_baixo, ALLEGRO_BITMAP **seta_direita, ALLEGRO_BITMAP **seta_esquerda, ALLEGRO_EVENT_QUEUE **fila_eventos, ALLEGRO_TIMER **timer)
+{
+    inicializa_allegro();
+    *janela = cria_tela();
+    *fila_eventos = al_create_event_queue();
+    *timer = al_create_timer(1.0 / FPS);
+    inicializa_recursos(seta_cima, seta_baixo, seta_direita, seta_esquerda);
+    configura_eventos(*fila_eventos, *janela, *timer);
+}
+
 void configura_eventos(ALLEGRO_EVENT_QUEUE *fila_eventos, ALLEGRO_DISPLAY *janela, ALLEGRO_TIMER *timer)
 {
     al_register_event_source(fila_eventos, al_get_display_event_source(janela));
     al_register_event_source(fila_eventos, al_get_timer_event_source(timer));
     al_register_event_source(fila_eventos, al_get_keyboard_event_source());
+}
+
+void desenha_jogo(int seta_jogador, int pontuacao, int vidas, float vel_inim, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_baixo, ALLEGRO_BITMAP *seta_direita, ALLEGRO_BITMAP *seta_esquerda)
+{
+    al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), 10, 10, 0, "Pontuação: %d", pontuacao);
+    al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), LARGURA - 150, 10, 0, "Vidas: %d", vidas);
+    al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), LARGURA - 150, 30, 0, "Velocidade: %.2f", vel_inim);
+    Seta player = {LARGURA / 2 - TAM_SETA / 2, ALTURA / 2 - TAM_SETA / 2, seta_jogador};
+    desenha_seta(player, seta_cima, seta_baixo, seta_direita, seta_esquerda);
+    al_flip_display();
+    al_clear_to_color(al_map_rgb(192, 192, 192));
+    al_draw_filled_rectangle(0, 355, LARGURA, 270, al_map_rgb(128, 128, 128));
 }
 
 void finaliza_recursos(ALLEGRO_DISPLAY *janela, ALLEGRO_EVENT_QUEUE *fila_eventos, ALLEGRO_TIMER *timer, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_baixo, ALLEGRO_BITMAP *seta_direita, ALLEGRO_BITMAP *seta_esquerda)

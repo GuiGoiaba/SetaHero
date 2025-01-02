@@ -7,7 +7,7 @@
 #define MAX_NOME 20
 #define TAM_SETA 50
 #define VELOCIDADE 0.5f
-#define MAX_INIMIGOS 3
+#define MAX_INIMIGOS 4
 
 // CONFIGURANDO A SETA
 typedef struct seta
@@ -18,14 +18,15 @@ typedef struct seta
 
 int main()
 {
+    // Inicializa variáveis do jogo
+    ALLEGRO_DISPLAY *janela = NULL;
+    ALLEGRO_BITMAP *seta_cima, *seta_baixo, *seta_direita, *seta_esquerda = NULL;
+    ALLEGRO_EVENT_QUEUE *fila_eventos = NULL;
+    ALLEGRO_TIMER *timer = NULL;
+    
     // Inicializa Allegro
     inicializa_allegro();
-
-    // Inicializa variáveis do jogo
-    ALLEGRO_DISPLAY *janela = cria_tela();
-    ALLEGRO_BITMAP *seta_cima, *seta_baixo, *seta_direita, *seta_esquerda = NULL;
-    ALLEGRO_EVENT_QUEUE *fila_eventos = al_create_event_queue();
-    ALLEGRO_TIMER *timer = al_create_timer(1.0 / FPS);
+    inicializa_jogo(&janela, &seta_cima, &seta_baixo, &seta_direita, &seta_esquerda, &fila_eventos, &timer);
 
     // Inicializando seta
     Seta setas[MAX_INIMIGOS];
@@ -34,15 +35,11 @@ int main()
     {
         setas[i] = criar_seta(LARGURA + i * espaco_inicial, ALTURA / 2 - TAM_SETA / 2);
     }
-    inicializa_recursos(&seta_cima, &seta_baixo, &seta_direita, &seta_esquerda);
     int seta_jogador = 0;
     int pontuacao = 0;
     int vidas = 3;
     int ult_pont = 0;
     float vel_inim = 1.0f;
-
-    // Configuração de eventos
-    configura_eventos(fila_eventos, janela, timer);
 
     // Configuração dos objetos
     int opcao = 0;
@@ -161,9 +158,9 @@ int main()
             }
             if (vidas <= 0)
             {
-                menu_final(pontuacao, nome_jogador);
+                pont_jogador(pontuacao, nome_jogador);
                 ult_pont = pontuacao;
-                while (1)
+                while (!dentro_menu)
                 {
                     ALLEGRO_EVENT ev2;
                     al_wait_for_event(fila_eventos, &ev2);
@@ -182,17 +179,7 @@ int main()
                 {
                     desenha_seta(setas[i], seta_cima, seta_baixo, seta_direita, seta_esquerda);
                 }
-
-                Seta player = {LARGURA / 2 - TAM_SETA / 2, ALTURA / 2 - TAM_SETA / 2, seta_jogador};
-                desenha_seta(player, seta_cima, seta_baixo, seta_direita, seta_esquerda);
-
-                al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), 10, 10, 0, "Pontuação: %d", pontuacao);
-                al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), LARGURA - 150, 10, 0, "Vidas: %d", vidas);
-                al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), LARGURA - 150, 30, 0, "Velocidade: %.2f", vel_inim);
-
-                al_flip_display();
-                al_clear_to_color(al_map_rgb(192, 192, 192));
-                al_draw_filled_rectangle(0, 355, LARGURA, 270, al_map_rgb(128, 128, 128));
+                desenha_jogo(seta_jogador, pontuacao, vidas, vel_inim, seta_cima, seta_baixo, seta_direita, seta_esquerda);
             }
         }
     }
