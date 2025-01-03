@@ -18,17 +18,25 @@
 #include "allegro5/allegro_image.h"
 
 typedef struct seta Seta;
+typedef struct no No;
+typedef struct fila Fila;
 
-Seta criar_seta(int largura_tela, int altura_tela);
 ALLEGRO_DISPLAY *cria_tela();
+Fila *criar_fila();
+void enfileirar(Fila *fila, Seta *seta);
+Seta *desenfileirar(Fila *fila);
+void liberar_fila(Fila *fila);
+Seta *criar_seta(int x, int y);
+Seta *criar_jogador(int x, int y, int direcao);
+void libera_seta(Seta *setas);
 void inicializa_allegro();
 void inicializa_recursos(ALLEGRO_BITMAP **seta_cima, ALLEGRO_BITMAP **seta_baixo, ALLEGRO_BITMAP **seta_direita, ALLEGRO_BITMAP **seta_esquerda);
 void configura_eventos(ALLEGRO_EVENT_QUEUE *fila_eventos, ALLEGRO_DISPLAY *janela, ALLEGRO_TIMER *timer);
 void desenha_menu(int escolha, const char *nome_jogador, int ult_pont);
 void insere_nome(char *nome_jogador);
 void inicializa_jogo(ALLEGRO_DISPLAY **janela, ALLEGRO_BITMAP **seta_cima, ALLEGRO_BITMAP **seta_baixo, ALLEGRO_BITMAP **seta_direita, ALLEGRO_BITMAP **seta_esquerda, ALLEGRO_EVENT_QUEUE **fila_eventos, ALLEGRO_TIMER **timer);
-void desenha_jogo(int seta_jogador, int pontuacao, int vidas, float vel_inim, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_baixo, ALLEGRO_BITMAP *seta_direita, ALLEGRO_BITMAP *seta_esquerda);
-void desenha_seta(Seta seta, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_baixo, ALLEGRO_BITMAP *seta_direita, ALLEGRO_BITMAP *seta_esquerda);
+void desenha_jogo(Seta *seta[], int direcao, int pontuacao, int vidas, float vel_inim, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_baixo, ALLEGRO_BITMAP *seta_direita, ALLEGRO_BITMAP *seta_esquerda);
+void desenha_seta(Seta *seta, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_baixo, ALLEGRO_BITMAP *seta_direita, ALLEGRO_BITMAP *seta_esquerda);
 void pont_jogador(int pontuacao, char *nome_jogador);
 void finaliza_recursos(ALLEGRO_DISPLAY *janela, ALLEGRO_EVENT_QUEUE *fila_eventos, ALLEGRO_TIMER *timer, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_baixo, ALLEGRO_BITMAP *seta_direita, ALLEGRO_BITMAP *seta_esquerda);
 

@@ -7,36 +7,45 @@ typedef struct seta
     int direcao;
 } Seta;
 
+typedef struct fila
+{
+    int tamanho;
+    Seta *seta;
+    Seta *inicio;
+    Seta *fim;
+    struct fila *prox;
+} Fila;
+
+int opcao = 0;
+int seg = 0;
+char nome_jogador[MAX_NOME] = "";
+
 int main()
 {
     // Inicializa variáveis do jogo
-    ALLEGRO_DISPLAY *janela = NULL;
-    ALLEGRO_BITMAP *seta_cima, *seta_baixo, *seta_direita, *seta_esquerda = NULL;
-    ALLEGRO_EVENT_QUEUE *fila_eventos = NULL;
-    ALLEGRO_TIMER *timer = NULL;
-    
-    // Inicializa Allegro
-    inicializa_allegro();
-    inicializa_jogo(&janela, &seta_cima, &seta_baixo, &seta_direita, &seta_esquerda, &fila_eventos, &timer);
+    ALLEGRO_DISPLAY *janela = (ALLEGRO_DISPLAY *)malloc(sizeof(ALLEGRO_DISPLAY *));
+    ALLEGRO_BITMAP *seta_cima, *seta_baixo, *seta_direita, *seta_esquerda = (ALLEGRO_BITMAP *)malloc(sizeof(ALLEGRO_BITMAP *));
+    ALLEGRO_EVENT_QUEUE *fila_eventos = (ALLEGRO_EVENT_QUEUE *)malloc(sizeof(ALLEGRO_EVENT_QUEUE *));
+    ALLEGRO_TIMER *timer = (ALLEGRO_TIMER *)malloc(sizeof(ALLEGRO_TIMER *));
 
     // Inicializando seta
-    Seta setas[MAX_INIMIGOS];
-    int espaco_inicial = 150;
-    for (int i = 0; i < MAX_INIMIGOS; i++)
-    {
-        setas[i] = criar_seta(LARGURA + i * espaco_inicial, ALTURA / 2 - TAM_SETA / 2);
-    }
-    int seta_jogador = 0;
+    Fila *fila_setas = criar_fila();
+    int direcao = 0;
     int pontuacao = 0;
     int vidas = 3;
     int ult_pont = 0;
+    int espaco_inicial = 150;
     float vel_inim = 1.0f;
+    Seta *setas[MAX_INIMIGOS];
+    for (int i = 0; i < MAX_INIMIGOS; i++)
+    {
+        setas[i] = criar_seta(LARGURA + i * espaco_inicial, ALTURA / 2 - TAM_SETA / 2);
+        enfileirar(fila_setas, setas[i]);
+    }
 
-    // Configuração dos objetos
-    int opcao = 0;
-    int seg = 0;
-    char nome_jogador[MAX_NOME] = "";
-
+    // CONFIGURAR OBJETOS
+    inicializa_allegro();
+    inicializa_jogo(&janela, &seta_cima, &seta_baixo, &seta_direita, &seta_esquerda, &fila_eventos, &timer);
     srand(time(NULL));
     al_start_timer(timer);
     bool fechar = false;
@@ -91,12 +100,18 @@ int main()
 
                 for (int i = 0; i < MAX_INIMIGOS; i++)
                 {
-                    setas[i].x -= (int)vel_inim;
+                    setas[i]->x -= (int)vel_inim;
 
-                    if (setas[i].x + TAM_SETA < 0)
+                    if (setas[i]->x + TAM_SETA < 0)
                     {
                         vidas--;
                         setas[i] = criar_seta(LARGURA, ALTURA / 2 - TAM_SETA / 2);
+                    }
+                    if(!setas)
+                    {
+                        setas[i] = desenfileirar(fila_setas);
+                        desenha_seta(setas[i], seta_cima, seta_baixo, seta_direita, seta_esquerda);
+                        free(setas[i]);
                     }
                 }
 
@@ -117,30 +132,30 @@ int main()
                     fechar = true;
                     break;
                 case (ALLEGRO_KEY_UP):
-                    seta_jogador = 0;
+                    direcao = 0;
                     break;
                 case (ALLEGRO_KEY_DOWN):
-                    seta_jogador = 1;
+                    direcao = 1;
                     break;
                 case (ALLEGRO_KEY_RIGHT):
-                    seta_jogador = 2;
+                    direcao = 2;
                     break;
                 case (ALLEGRO_KEY_LEFT):
-                    seta_jogador = 3;
+                    direcao = 3;
                     break;
                 }
                 for (int i = 0; i < MAX_INIMIGOS; i++)
                 {
-                    if (setas[i].x < LARGURA / 2 + TAM_SETA / 2 &&
-                        setas[i].x > LARGURA / 2 - TAM_SETA / 2 &&
-                        setas[i].direcao == seta_jogador)
+                    if (setas[i]->x < LARGURA / 2 + TAM_SETA / 2 &&
+                        setas[i]->x > LARGURA / 2 - TAM_SETA / 2 &&
+                        setas[i]->direcao == direcao)
                     {
                         pontuacao += 50;
                         setas[i] = criar_seta(LARGURA, ALTURA / 2 - TAM_SETA / 2);
                     }
-                    else if (setas[i].x < LARGURA / 2 + TAM_SETA / 2 &&
-                             setas[i].x > LARGURA / 2 - TAM_SETA / 2 &&
-                             setas[i].direcao != seta_jogador)
+                    else if (setas[i]->x < LARGURA / 2 + TAM_SETA / 2 &&
+                             setas[i]->x > LARGURA / 2 - TAM_SETA / 2 &&
+                             setas[i]->direcao != direcao)
                     {
                         vidas--;
                         setas[i] = criar_seta(LARGURA, ALTURA / 2 - TAM_SETA / 2);
@@ -165,12 +180,7 @@ int main()
             if (redraw && al_is_event_queue_empty(fila_eventos))
             {
                 redraw = false;
-
-                for (int i = 0; i < MAX_INIMIGOS; i++)
-                {
-                    desenha_seta(setas[i], seta_cima, seta_baixo, seta_direita, seta_esquerda);
-                }
-                desenha_jogo(seta_jogador, pontuacao, vidas, vel_inim, seta_cima, seta_baixo, seta_direita, seta_esquerda);
+                desenha_jogo(setas, direcao, pontuacao, vidas, vel_inim, seta_cima, seta_baixo, seta_direita, seta_esquerda);
             }
         }
     }

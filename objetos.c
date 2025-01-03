@@ -1,25 +1,112 @@
 #include "objetos.h"
 
-#define LARGURA 800
-#define ALTURA 600
-#define FPS 60
-#define MAX_NOME 20
-#define TAM_SETA 50
-#define VELOCIDADE 0.5f
-#define MAX_INIMIGOS 3
-
 typedef struct seta
 {
     int x, y;
     int direcao;
 } Seta;
-Seta criar_seta(int x, int y)
+typedef struct no
 {
-    Seta seta;
-    seta.x = x;
-    seta.y = y;
-    seta.direcao = rand() % 4;
+    Seta *seta;
+    struct no *proximo;
+} No;
+typedef struct fila
+{
+    No *inicio;
+    No *fim;
+    int tamanho;
+} Fila;
+
+Fila *criar_fila()
+{
+    Fila *fila = (Fila *)malloc(sizeof(Fila));
+    if (!fila)
+    {
+        printf("Erro ao alocar memória para a fila.\n");
+        exit(EXIT_FAILURE);
+    }
+    fila->inicio = NULL;
+    fila->fim = NULL;
+    fila->tamanho = 0;
+    return fila;
+}
+void enfileirar(Fila *fila, Seta *seta)
+{
+    No *novo = (No *)malloc(sizeof(No));
+    if (!novo)
+    {
+        printf("Erro ao alocar memória para o no.\n");
+        exit(EXIT_FAILURE);
+    }
+    novo->seta = seta;
+    novo->proximo = NULL;
+
+    if (fila->fim)
+    {
+        fila->fim->proximo = novo;
+    }
+    else
+    {
+        fila->inicio = novo;
+    }
+    fila->fim = novo;
+    fila->tamanho++;
+}
+Seta *desenfileirar(Fila *fila)
+{
+    if (!fila->inicio)
+        return NULL;
+
+    No *temp = fila->inicio;
+    Seta *seta = temp->seta;
+
+    fila->inicio = fila->inicio->proximo;
+    if (!fila->inicio)
+    {
+        fila->fim = NULL;
+    }
+    free(temp);
+    fila->tamanho--;
     return seta;
+}
+void liberar_fila(Fila *fila)
+{
+    free(fila);
+}
+Seta *criar_seta(int x, int y)
+{
+    Seta *seta = (Seta *)malloc(sizeof(Seta));
+    if (!seta)
+    {
+        printf("Erro ao alocar memória para a seta.\n");
+        exit(EXIT_FAILURE);
+    }
+    seta->x = x;
+    seta->y = y;
+    seta->direcao = rand() % 4;
+    return seta;
+}
+Seta *criar_jogador(int x, int y, int direcao)
+{
+    Seta *seta_jogador = (Seta *)malloc(sizeof(Seta));
+    if (!seta_jogador)
+    {
+        printf("Erro ao alocar memória para a seta.\n");
+        exit(EXIT_FAILURE);
+    }
+    seta_jogador->x = x;
+    seta_jogador->y = y;
+    seta_jogador->direcao = direcao;
+    return seta_jogador;
+}
+void libera_seta(Seta *setas)
+{
+    for (int i = 0; i < MAX_INIMIGOS; i++)
+    {
+        {
+            free(setas);
+        }
+    }
 }
 ALLEGRO_DISPLAY *cria_tela()
 {
@@ -62,6 +149,15 @@ void configura_eventos(ALLEGRO_EVENT_QUEUE *fila_eventos, ALLEGRO_DISPLAY *janel
     al_register_event_source(fila_eventos, al_get_timer_event_source(timer));
     al_register_event_source(fila_eventos, al_get_keyboard_event_source());
 }
+void inicializa_jogo(ALLEGRO_DISPLAY **janela, ALLEGRO_BITMAP **seta_cima, ALLEGRO_BITMAP **seta_baixo, ALLEGRO_BITMAP **seta_direita, ALLEGRO_BITMAP **seta_esquerda, ALLEGRO_EVENT_QUEUE **fila_eventos, ALLEGRO_TIMER **timer)
+{
+    *janela = cria_tela();
+    *fila_eventos = al_create_event_queue();
+    *timer = al_create_timer(1.0 / FPS);
+    inicializa_allegro();
+    inicializa_recursos(seta_cima, seta_baixo, seta_direita, seta_esquerda);
+    configura_eventos(*fila_eventos, *janela, *timer);
+}
 void desenha_menu(int escolha, const char *nome_jogador, int ult_pont)
 {
     ALLEGRO_FONT *fonte = al_create_builtin_font();
@@ -93,13 +189,15 @@ void desenha_menu(int escolha, const char *nome_jogador, int ult_pont)
 }
 void insere_nome(char *nome_jogador)
 {
-    ALLEGRO_FONT *fonte = al_create_builtin_font();
+    ALLEGRO_FONT *fonte = (ALLEGRO_FONT *)malloc(sizeof(ALLEGRO_FONT *));
+    fonte = al_create_builtin_font();
     al_clear_to_color(al_map_rgb(192, 192, 192));
 
     al_draw_text(fonte, al_map_rgb(0, 0, 0), LARGURA / 2, ALTURA / 3, ALLEGRO_ALIGN_CENTRE, "Digite seu nome:");
     al_flip_display();
 
-    ALLEGRO_EVENT_QUEUE *input_teclado = al_create_event_queue();
+    ALLEGRO_EVENT_QUEUE *input_teclado = (ALLEGRO_EVENT_QUEUE *)malloc(sizeof(ALLEGRO_EVENT_QUEUE *));
+    input_teclado = al_create_event_queue();
     al_register_event_source(input_teclado, al_get_keyboard_event_source());
 
     int inicio = 0;
@@ -137,41 +235,38 @@ void insere_nome(char *nome_jogador)
     }
     al_destroy_event_queue(input_teclado);
 }
-void inicializa_jogo(ALLEGRO_DISPLAY **janela, ALLEGRO_BITMAP **seta_cima, ALLEGRO_BITMAP **seta_baixo, ALLEGRO_BITMAP **seta_direita, ALLEGRO_BITMAP **seta_esquerda, ALLEGRO_EVENT_QUEUE **fila_eventos, ALLEGRO_TIMER **timer)
+void desenha_jogo(Seta *setas[], int direcao, int pontuacao, int vidas, float vel_inim, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_baixo, ALLEGRO_BITMAP *seta_direita, ALLEGRO_BITMAP *seta_esquerda)
 {
-    inicializa_allegro();
-    *janela = cria_tela();
-    *fila_eventos = al_create_event_queue();
-    *timer = al_create_timer(1.0 / FPS);
-    inicializa_recursos(seta_cima, seta_baixo, seta_direita, seta_esquerda);
-    configura_eventos(*fila_eventos, *janela, *timer);
-}
-void desenha_jogo(int seta_jogador, int pontuacao, int vidas, float vel_inim, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_baixo, ALLEGRO_BITMAP *seta_direita, ALLEGRO_BITMAP *seta_esquerda)
-{
-    al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), 10, 10, 0, "Pontuação: %d", pontuacao);
-    al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), LARGURA - 150, 10, 0, "Vidas: %d", vidas);
-    al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), LARGURA - 150, 30, 0, "Velocidade: %.2f", vel_inim);
-    Seta player = {LARGURA / 2 - TAM_SETA / 2, ALTURA / 2 - TAM_SETA / 2, seta_jogador};
-    desenha_seta(player, seta_cima, seta_baixo, seta_direita, seta_esquerda);
+    Seta *jogador = (Seta *)malloc(sizeof(Seta *));
+    jogador = criar_jogador(LARGURA / 2 - TAM_SETA / 2, (ALTURA / 2) - TAM_SETA / 2, direcao);
+    desenha_seta(jogador, seta_cima, seta_baixo, seta_direita, seta_esquerda);
+    for (int i = 0; i < MAX_INIMIGOS; i++)
+    {
+        desenha_seta(setas[i], seta_cima, seta_baixo, seta_direita, seta_esquerda);
+    }
     al_flip_display();
     al_clear_to_color(al_map_rgb(192, 192, 192));
     al_draw_filled_rectangle(0, 355, LARGURA, 270, al_map_rgb(128, 128, 128));
+    al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), 10, 10, 0, "Pontuação: %d", pontuacao);
+    al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), LARGURA - 150, 10, 0, "Vidas: %d", vidas);
+    al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), LARGURA - 150, 30, 0, "Velocidade: %.2f", vel_inim);
+    free(jogador);
 }
-void desenha_seta(Seta seta, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_baixo, ALLEGRO_BITMAP *seta_direita, ALLEGRO_BITMAP *seta_esquerda)
+void desenha_seta(Seta *seta, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_baixo, ALLEGRO_BITMAP *seta_direita, ALLEGRO_BITMAP *seta_esquerda)
 {
-    switch (seta.direcao)
+    switch (seta->direcao)
     {
     case 0: // Cima
-        al_draw_bitmap(seta_cima, seta.x, seta.y, 0);
+        al_draw_bitmap(seta_cima, seta->x, seta->y, 0);
         break;
     case 1: // Baixo
-        al_draw_bitmap(seta_baixo, seta.x, seta.y, 0);
+        al_draw_bitmap(seta_baixo, seta->x, seta->y, 0);
         break;
     case 2: // Direita
-        al_draw_bitmap(seta_direita, seta.x, seta.y, 0);
+        al_draw_bitmap(seta_direita, seta->x, seta->y, 0);
         break;
     case 3: // Esquerda
-        al_draw_bitmap(seta_esquerda, seta.x, seta.y, 0);
+        al_draw_bitmap(seta_esquerda, seta->x, seta->y, 0);
         break;
     }
 }

@@ -4,6 +4,7 @@
         "allegro_primitives.h": "c",
         "allegro.h": "c",
         "allegro_font.h": "c",
-        "objetos.h": "c"
+        "objetos.h": "c",
+        "allegro_image.h": "c"
     }
 }
