@@ -1,24 +1,5 @@
 #include "header.h"
 
-typedef struct seta
-{
-    int x, y;
-    int direcao;
-} Seta;
-
-typedef struct lista
-{
-    Seta *seta;
-    struct lista *proximo;
-} Lista;
-
-typedef struct fila
-{
-    Lista *inicio;
-    Lista *fim;
-    int tamanho;
-} Fila;
-
 Fila *criar_fila()
 {
     Fila *fila = (Fila *)malloc(sizeof(Fila));
@@ -27,9 +8,7 @@ Fila *criar_fila()
         printf("erro ao alocar memória para a fila :/\n");
         exit(EXIT_FAILURE);
     }
-    fila->inicio = NULL;
-    fila->fim = NULL;
-    fila->tamanho = 0;
+    fila->inicio = fila->fim = NULL;
     return fila;
 }
 
@@ -44,7 +23,7 @@ void enfileirar(Fila *fila, Seta *seta)
     novo->seta = seta;
     novo->proximo = NULL;
 
-    if (fila->fim)
+    if (fila->fim != NULL)
     {
         fila->fim->proximo = novo;
     }
@@ -57,14 +36,11 @@ void enfileirar(Fila *fila, Seta *seta)
 
 Seta *desenfileirar(Fila *fila)
 {
-    if (!fila->inicio)
-        return NULL;
-
     Lista *temp = fila->inicio;
     Seta *seta = temp->seta;
-
     fila->inicio = fila->inicio->proximo;
-    if (!fila->inicio)
+    
+    if (fila->inicio == NULL)
     {
         fila->fim = NULL;
     }
@@ -136,7 +112,6 @@ void inicializa_allegro()
     al_init_image_addon();
     al_init_font_addon();
     al_init_ttf_addon();
-    printf("inicializacao do allegro funcionou :D\n");
 }
 
 void inicializa_recursos(ALLEGRO_BITMAP **seta_cima, ALLEGRO_BITMAP **seta_baixo, ALLEGRO_BITMAP **seta_direita, ALLEGRO_BITMAP **seta_esquerda)
@@ -168,7 +143,7 @@ void inicializa_jogo(ALLEGRO_DISPLAY **janela, ALLEGRO_BITMAP **seta_cima, ALLEG
     inicializa_allegro();
     inicializa_recursos(seta_cima, seta_baixo, seta_direita, seta_esquerda);
     configura_eventos(*fila_eventos, *janela, *timer);
-    printf("inicializacao do jogo funcionou :D\n");
+    printf("espero que goste :D\n");
 }
 
 void desenha_menu(int escolha, const char *nome_jogador, int ult_pont)
@@ -270,18 +245,19 @@ void desenha_jogo(Seta *setas[], int direcao, int pontuacao, int vidas, float ve
 
 void desenha_seta(Seta *seta, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_baixo, ALLEGRO_BITMAP *seta_direita, ALLEGRO_BITMAP *seta_esquerda)
 {
+    enum teclas{cima, baixo, direita, esquerda};
     switch (seta->direcao)
     {
-    case 0: // Cima
+    case cima: // Cima
         al_draw_bitmap(seta_cima, seta->x, seta->y, 0);
         break;
-    case 1: // Baixo
+    case baixo: // Baixo
         al_draw_bitmap(seta_baixo, seta->x, seta->y, 0);
         break;
-    case 2: // Direita
+    case direita: // Direita
         al_draw_bitmap(seta_direita, seta->x, seta->y, 0);
         break;
-    case 3: // Esquerda
+    case esquerda: // Esquerda
         al_draw_bitmap(seta_esquerda, seta->x, seta->y, 0);
         break;
     }

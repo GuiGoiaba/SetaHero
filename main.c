@@ -1,29 +1,10 @@
 #include "header.h"
 
-typedef struct seta
-{
-    int x, y;
-    int direcao;
-} Seta;
-
-typedef struct lista
-{
-    Seta *seta;
-    struct lista *proximo;
-} Lista;
-
-typedef struct fila
-{
-    Lista *inicio;
-    Lista *fim;
-} Fila;
-
 int opcao = 0;
 int seg = 0;
 
 int main()
 {
-    // Inicializa variáveis do jogo
     ALLEGRO_DISPLAY *janela = (ALLEGRO_DISPLAY *)malloc(sizeof(ALLEGRO_DISPLAY *));
     ALLEGRO_BITMAP *seta_cima, *seta_baixo, *seta_direita, *seta_esquerda = (ALLEGRO_BITMAP *)malloc(sizeof(ALLEGRO_BITMAP *));
     ALLEGRO_EVENT_QUEUE *fila_eventos = (ALLEGRO_EVENT_QUEUE *)malloc(sizeof(ALLEGRO_EVENT_QUEUE *));
@@ -32,7 +13,6 @@ int main()
     inicializa_allegro();
     inicializa_jogo(&janela, &seta_cima, &seta_baixo, &seta_direita, &seta_esquerda, &fila_eventos, &timer);
 
-    // Inicializando seta
     int direcao = 0;
     int pontuacao = 0;
     int vidas = 3;
@@ -49,7 +29,6 @@ int main()
         enfileirar(fila_setas, setas[i]);
     }
 
-    // CONFIGURAR OBJETOS
     srand(time(NULL));
     bool fechar = false;
     bool redraw = true;
@@ -113,8 +92,8 @@ int main()
                     if (setas[i]->x + TAM_SETA < 0)
                     {
                         vidas--;
-                        setas[i] = criar_seta(LARGURA, ALTURA / 2 - TAM_SETA / 2);
                         setas[i] = desenfileirar(fila_setas);
+                        setas[i] = criar_seta(LARGURA, ALTURA / 2 - TAM_SETA / 2);
                     }
                 }
 
@@ -135,16 +114,16 @@ int main()
                     fechar = true;
                     break;
                 case (ALLEGRO_KEY_UP):
-                    direcao = 0;
+                    direcao = cima;
                     break;
                 case (ALLEGRO_KEY_DOWN):
-                    direcao = 1;
+                    direcao = baixo;
                     break;
                 case (ALLEGRO_KEY_RIGHT):
-                    direcao = 2;
+                    direcao = direita;
                     break;
                 case (ALLEGRO_KEY_LEFT):
-                    direcao = 3;
+                    direcao = esquerda;
                     break;
                 }
                 for (int i = 0; i < MAX_INIMIGOS; i++)

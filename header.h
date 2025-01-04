@@ -1,7 +1,7 @@
 #ifndef header_h
 #define header_h
 
-//GLOBAIS
+// GLOBAIS
 #define LARGURA 800
 #define ALTURA 600
 #define FPS 60
@@ -19,8 +19,26 @@
 #include "allegro5/allegro_ttf.h"
 #include "allegro5/allegro_image.h"
 
-typedef struct seta Seta;
-typedef struct fila Fila;
+typedef struct seta
+{
+    int x, y;
+    int direcao;
+} Seta;
+
+typedef struct lista
+{
+    Seta *seta;
+    struct lista *proximo;
+} Lista;
+
+typedef struct fila
+{
+    Lista *inicio;
+    Lista *fim;
+    int tamanho;
+} Fila;
+
+enum teclas{cima, baixo, direita, esquerda};
 
 Fila *criar_fila();
 void enfileirar(Fila *fila, Seta *seta);
