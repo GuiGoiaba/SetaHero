@@ -1,24 +1,25 @@
-#include "objetos.h"
+#include "header.h"
 
-// CONFIGURANDO A SETA
 typedef struct seta
 {
     int x, y;
     int direcao;
 } Seta;
 
+typedef struct lista
+{
+    Seta *seta;
+    struct lista *proximo;
+} Lista;
+
 typedef struct fila
 {
-    int tamanho;
-    Seta *seta;
-    Seta *inicio;
-    Seta *fim;
-    struct fila *prox;
+    Lista *inicio;
+    Lista *fim;
 } Fila;
 
 int opcao = 0;
 int seg = 0;
-char nome_jogador[MAX_NOME] = "";
 
 int main()
 {
@@ -28,14 +29,19 @@ int main()
     ALLEGRO_EVENT_QUEUE *fila_eventos = (ALLEGRO_EVENT_QUEUE *)malloc(sizeof(ALLEGRO_EVENT_QUEUE *));
     ALLEGRO_TIMER *timer = (ALLEGRO_TIMER *)malloc(sizeof(ALLEGRO_TIMER *));
 
+    inicializa_allegro();
+    inicializa_jogo(&janela, &seta_cima, &seta_baixo, &seta_direita, &seta_esquerda, &fila_eventos, &timer);
+
     // Inicializando seta
-    Fila *fila_setas = criar_fila();
     int direcao = 0;
     int pontuacao = 0;
     int vidas = 3;
     int ult_pont = 0;
     int espaco_inicial = 150;
-    float vel_inim = 1.0f;
+    float vel_inim = 0;
+    char nome_jogador[MAX_NOME] = "";
+
+    Fila *fila_setas = criar_fila();
     Seta *setas[MAX_INIMIGOS];
     for (int i = 0; i < MAX_INIMIGOS; i++)
     {
@@ -44,10 +50,7 @@ int main()
     }
 
     // CONFIGURAR OBJETOS
-    inicializa_allegro();
-    inicializa_jogo(&janela, &seta_cima, &seta_baixo, &seta_direita, &seta_esquerda, &fila_eventos, &timer);
     srand(time(NULL));
-    al_start_timer(timer);
     bool fechar = false;
     bool redraw = true;
     bool dentro_menu = true;
@@ -77,10 +80,15 @@ int main()
                         dentro_menu = false;
                         pontuacao = 0;
                         vidas = 3;
-                        vel_inim = 1.0f;
+                        vel_inim = 0;
+                        for (int i = 0; i < MAX_INIMIGOS; i++)
+                        {
+                            setas[i]->x = LARGURA + i * espaco_inicial;
+                        }
                     }
                     else
                     {
+                        dentro_menu = false;
                         fechar = true;
                     }
                 }
@@ -106,12 +114,7 @@ int main()
                     {
                         vidas--;
                         setas[i] = criar_seta(LARGURA, ALTURA / 2 - TAM_SETA / 2);
-                    }
-                    if(!setas)
-                    {
                         setas[i] = desenfileirar(fila_setas);
-                        desenha_seta(setas[i], seta_cima, seta_baixo, seta_direita, seta_esquerda);
-                        free(setas[i]);
                     }
                 }
 
@@ -184,6 +187,9 @@ int main()
             }
         }
     }
+    liberar_fila(fila_setas);
+    for (int i = 0; i < MAX_INIMIGOS; i++)
+        libera_seta(setas[i]);
     finaliza_recursos(janela, fila_eventos, timer, seta_cima, seta_baixo, seta_direita, seta_esquerda);
     return 0;
 }

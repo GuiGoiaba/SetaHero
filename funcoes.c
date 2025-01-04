@@ -1,19 +1,21 @@
-#include "objetos.h"
+#include "header.h"
 
 typedef struct seta
 {
     int x, y;
     int direcao;
 } Seta;
-typedef struct no
+
+typedef struct lista
 {
     Seta *seta;
-    struct no *proximo;
-} No;
+    struct lista *proximo;
+} Lista;
+
 typedef struct fila
 {
-    No *inicio;
-    No *fim;
+    Lista *inicio;
+    Lista *fim;
     int tamanho;
 } Fila;
 
@@ -22,7 +24,7 @@ Fila *criar_fila()
     Fila *fila = (Fila *)malloc(sizeof(Fila));
     if (!fila)
     {
-        printf("Erro ao alocar memória para a fila.\n");
+        printf("erro ao alocar memória para a fila :/\n");
         exit(EXIT_FAILURE);
     }
     fila->inicio = NULL;
@@ -30,12 +32,13 @@ Fila *criar_fila()
     fila->tamanho = 0;
     return fila;
 }
+
 void enfileirar(Fila *fila, Seta *seta)
 {
-    No *novo = (No *)malloc(sizeof(No));
+    Lista *novo = (Lista *)malloc(sizeof(Lista));
     if (!novo)
     {
-        printf("Erro ao alocar memória para o no.\n");
+        printf("erro ao alocar memória para a fila :/\n");
         exit(EXIT_FAILURE);
     }
     novo->seta = seta;
@@ -50,14 +53,14 @@ void enfileirar(Fila *fila, Seta *seta)
         fila->inicio = novo;
     }
     fila->fim = novo;
-    fila->tamanho++;
 }
+
 Seta *desenfileirar(Fila *fila)
 {
     if (!fila->inicio)
         return NULL;
 
-    No *temp = fila->inicio;
+    Lista *temp = fila->inicio;
     Seta *seta = temp->seta;
 
     fila->inicio = fila->inicio->proximo;
@@ -66,19 +69,24 @@ Seta *desenfileirar(Fila *fila)
         fila->fim = NULL;
     }
     free(temp);
-    fila->tamanho--;
     return seta;
 }
+
 void liberar_fila(Fila *fila)
 {
+    while (!fila)
+    {
+        desenfileirar(fila);
+    }
     free(fila);
 }
+
 Seta *criar_seta(int x, int y)
 {
     Seta *seta = (Seta *)malloc(sizeof(Seta));
     if (!seta)
     {
-        printf("Erro ao alocar memória para a seta.\n");
+        printf("erro ao alocar memória para a fila :/\n");
         exit(EXIT_FAILURE);
     }
     seta->x = x;
@@ -86,12 +94,13 @@ Seta *criar_seta(int x, int y)
     seta->direcao = rand() % 4;
     return seta;
 }
+
 Seta *criar_jogador(int x, int y, int direcao)
 {
     Seta *seta_jogador = (Seta *)malloc(sizeof(Seta));
     if (!seta_jogador)
     {
-        printf("Erro ao alocar memória para a seta.\n");
+        printf("erro ao alocar memória para a fila :/\n");
         exit(EXIT_FAILURE);
     }
     seta_jogador->x = x;
@@ -99,30 +108,27 @@ Seta *criar_jogador(int x, int y, int direcao)
     seta_jogador->direcao = direcao;
     return seta_jogador;
 }
-void libera_seta(Seta *setas)
-{
-    for (int i = 0; i < MAX_INIMIGOS; i++)
-    {
-        {
-            free(setas);
-        }
-    }
+
+void libera_seta(Seta *seta){
+    free(seta);
 }
+
 ALLEGRO_DISPLAY *cria_tela()
 {
     ALLEGRO_DISPLAY *janela = al_create_display(LARGURA, ALTURA);
     if (!janela)
     {
-        printf("Erro ao criar a tela.\n");
+        printf("erro ao alocar memória para a fila :/\n");
         exit(EXIT_FAILURE);
     }
     return janela;
 }
+
 void inicializa_allegro()
 {
     if (!al_init())
     {
-        printf("Erro ao inicializar o Allegro.\n");
+        printf("erro ao alocar memória para a fila :/\n");
         exit(EXIT_FAILURE);
     }
     al_install_keyboard();
@@ -130,7 +136,9 @@ void inicializa_allegro()
     al_init_image_addon();
     al_init_font_addon();
     al_init_ttf_addon();
+    printf("inicializacao do allegro funcionou :D\n");
 }
+
 void inicializa_recursos(ALLEGRO_BITMAP **seta_cima, ALLEGRO_BITMAP **seta_baixo, ALLEGRO_BITMAP **seta_direita, ALLEGRO_BITMAP **seta_esquerda)
 {
     *seta_cima = al_load_bitmap("Assets/seta_cima.png");
@@ -143,12 +151,15 @@ void inicializa_recursos(ALLEGRO_BITMAP **seta_cima, ALLEGRO_BITMAP **seta_baixo
         exit(EXIT_FAILURE);
     }
 }
+
 void configura_eventos(ALLEGRO_EVENT_QUEUE *fila_eventos, ALLEGRO_DISPLAY *janela, ALLEGRO_TIMER *timer)
 {
     al_register_event_source(fila_eventos, al_get_display_event_source(janela));
     al_register_event_source(fila_eventos, al_get_timer_event_source(timer));
     al_register_event_source(fila_eventos, al_get_keyboard_event_source());
+    al_start_timer(timer);
 }
+
 void inicializa_jogo(ALLEGRO_DISPLAY **janela, ALLEGRO_BITMAP **seta_cima, ALLEGRO_BITMAP **seta_baixo, ALLEGRO_BITMAP **seta_direita, ALLEGRO_BITMAP **seta_esquerda, ALLEGRO_EVENT_QUEUE **fila_eventos, ALLEGRO_TIMER **timer)
 {
     *janela = cria_tela();
@@ -157,7 +168,9 @@ void inicializa_jogo(ALLEGRO_DISPLAY **janela, ALLEGRO_BITMAP **seta_cima, ALLEG
     inicializa_allegro();
     inicializa_recursos(seta_cima, seta_baixo, seta_direita, seta_esquerda);
     configura_eventos(*fila_eventos, *janela, *timer);
+    printf("inicializacao do jogo funcionou :D\n");
 }
+
 void desenha_menu(int escolha, const char *nome_jogador, int ult_pont)
 {
     ALLEGRO_FONT *fonte = al_create_builtin_font();
@@ -187,6 +200,7 @@ void desenha_menu(int escolha, const char *nome_jogador, int ult_pont)
     }
     al_flip_display();
 }
+
 void insere_nome(char *nome_jogador)
 {
     ALLEGRO_FONT *fonte = (ALLEGRO_FONT *)malloc(sizeof(ALLEGRO_FONT *));
@@ -235,6 +249,7 @@ void insere_nome(char *nome_jogador)
     }
     al_destroy_event_queue(input_teclado);
 }
+
 void desenha_jogo(Seta *setas[], int direcao, int pontuacao, int vidas, float vel_inim, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_baixo, ALLEGRO_BITMAP *seta_direita, ALLEGRO_BITMAP *seta_esquerda)
 {
     Seta *jogador = (Seta *)malloc(sizeof(Seta *));
@@ -252,6 +267,7 @@ void desenha_jogo(Seta *setas[], int direcao, int pontuacao, int vidas, float ve
     al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), LARGURA - 150, 30, 0, "Velocidade: %.2f", vel_inim);
     free(jogador);
 }
+
 void desenha_seta(Seta *seta, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_baixo, ALLEGRO_BITMAP *seta_direita, ALLEGRO_BITMAP *seta_esquerda)
 {
     switch (seta->direcao)
@@ -270,6 +286,7 @@ void desenha_seta(Seta *seta, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_ba
         break;
     }
 }
+
 void pont_jogador(int pontuacao, char *nome_jogador)
 {
     ALLEGRO_FONT *fonte = al_create_builtin_font();
@@ -282,6 +299,7 @@ void pont_jogador(int pontuacao, char *nome_jogador)
 
     al_flip_display();
 }
+
 void finaliza_recursos(ALLEGRO_DISPLAY *janela, ALLEGRO_EVENT_QUEUE *fila_eventos, ALLEGRO_TIMER *timer, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_baixo, ALLEGRO_BITMAP *seta_direita, ALLEGRO_BITMAP *seta_esquerda)
 {
     al_destroy_display(janela);

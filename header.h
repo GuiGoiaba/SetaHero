@@ -1,5 +1,7 @@
-#ifndef objetos_h
-#define objetos_h
+#ifndef header_h
+#define header_h
+
+//GLOBAIS
 #define LARGURA 800
 #define ALTURA 600
 #define FPS 60
@@ -18,10 +20,8 @@
 #include "allegro5/allegro_image.h"
 
 typedef struct seta Seta;
-typedef struct no No;
 typedef struct fila Fila;
 
-ALLEGRO_DISPLAY *cria_tela();
 Fila *criar_fila();
 void enfileirar(Fila *fila, Seta *seta);
 Seta *desenfileirar(Fila *fila);
@@ -29,6 +29,7 @@ void liberar_fila(Fila *fila);
 Seta *criar_seta(int x, int y);
 Seta *criar_jogador(int x, int y, int direcao);
 void libera_seta(Seta *setas);
+ALLEGRO_DISPLAY *cria_tela();
 void inicializa_allegro();
 void inicializa_recursos(ALLEGRO_BITMAP **seta_cima, ALLEGRO_BITMAP **seta_baixo, ALLEGRO_BITMAP **seta_direita, ALLEGRO_BITMAP **seta_esquerda);
 void configura_eventos(ALLEGRO_EVENT_QUEUE *fila_eventos, ALLEGRO_DISPLAY *janela, ALLEGRO_TIMER *timer);
