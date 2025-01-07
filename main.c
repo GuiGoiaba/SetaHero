@@ -176,7 +176,6 @@ int main()
                 {
                     setas[i] = criar_seta(LARGURA, ALTURA / 2 - TAM_SETA / 2);
                 }
-
                 while (!dentro_menu)
                 {
                     ALLEGRO_EVENT ev2;
