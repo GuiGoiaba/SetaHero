@@ -1,118 +1,111 @@
-#include "header.h"
+#include "objetos.h"
 
-// variáveis globais
-int opcao = 0;
-int seg = 0;
+#define LARGURA 800
+#define ALTURA 600
+#define FPS 60
+#define MAX_NOME 20
+#define TAM_SETA 50
+#define VELOCIDADE 0.5f
+#define MAX_INIMIGOS 2
+
+typedef struct seta
+{
+    int x, y;
+    int direcao;
+} Seta;
 
 int main()
 {
-    // inicialização dos recursos
-    ALLEGRO_TIMER *timer;
-    ALLEGRO_DISPLAY *janela;
-    ALLEGRO_EVENT_QUEUE *fila_eventos;
-    ALLEGRO_BITMAP *seta_cima, *seta_baixo, *seta_direita, *seta_esquerda;
-
-    // inicialização do jogo
     inicializa_allegro();
-    inicializa_jogo(&janela, &seta_cima, &seta_baixo, &seta_direita, &seta_esquerda, &fila_eventos, &timer);
 
-    // variáveis do jogo
-    int vidas = 3;
-    int direcao = 0;
-    int ult_pont = 0;
-    int pontuacao = 0;
-    float vel_inim = 0;
+    ALLEGRO_DISPLAY *janela = cria_tela();
+
+    ALLEGRO_BITMAP *seta_cima, *seta_baixo, *seta_direita, *seta_esquerda = NULL;
+    ALLEGRO_EVENT_QUEUE *fila_eventos = al_create_event_queue();
+    ALLEGRO_TIMER *timer = al_create_timer(1.0 / FPS);
+
+    Seta setas[MAX_INIMIGOS];
     int espaco_inicial = 150;
-    char nome_jogador[MAX_NOME] = "";
-
-    // criação das setas
-    Seta *jogador;
-    Seta *setas[MAX_INIMIGOS];
-    Fila *fila_setas = criar_fila();
     for (int i = 0; i < MAX_INIMIGOS; i++)
     {
         setas[i] = criar_seta(LARGURA + i * espaco_inicial, ALTURA / 2 - TAM_SETA / 2);
-        enfileirar(fila_setas, setas[i]);
     }
-
-    // loop principal
-    srand(time(NULL));
-    bool redraw = true;
+    inicializa_recursos(&seta_cima, &seta_baixo, &seta_direita, &seta_esquerda);
+    int seta_jogador = 0;
+    int pontuacao = 0;
+    int seg = 0;
+    int vidas = 3;
+    int ult_pont = 0;
+    float vel_inim = 1.0f;
     bool fechar = false;
+    bool redraw = true;
+
+    configura_eventos(fila_eventos, janela, timer);
+
+    int menu_option = 0;
     bool dentro_menu = true;
+    char nome_jogador[MAX_NOME] = "";
+
+    srand(time(NULL));
+    al_start_timer(timer);
 
     while (!fechar)
     {
         ALLEGRO_EVENT ev;
         al_wait_for_event(fila_eventos, &ev);
-        // menu
         if (dentro_menu)
         {
             if (ev.type == ALLEGRO_EVENT_KEY_DOWN)
             {
-                // escolha da opção
                 if (ev.keyboard.keycode == ALLEGRO_KEY_DOWN)
                 {
-                    opcao = (opcao + 1) % 2;
+                    menu_option = (menu_option + 1) % 2;
                 }
                 else if (ev.keyboard.keycode == ALLEGRO_KEY_UP)
                 {
-                    opcao = (opcao - 1 + 2) % 2;
+                    menu_option = (menu_option - 1 + 2) % 2;
                 }
-                // confirmação da opção
                 else if (ev.keyboard.keycode == ALLEGRO_KEY_ENTER)
                 {
-                    if (opcao == 0)
+                    if (menu_option == 0)
                     {
-                        // reinicialização do jogo
                         dentro_menu = false;
                         insere_nome(nome_jogador);
+                        dentro_menu = false;
                         pontuacao = 0;
                         vidas = 3;
-                        vel_inim = 1.0;
-                        for (int i = 0; i < MAX_INIMIGOS; i++)
-                        {
-                            setas[i]->x = LARGURA + i * espaco_inicial;
-                        }
+                        vel_inim = 1.0f;
                     }
                     else
                     {
-                        // saída do jogo
-                        dentro_menu = false;
                         fechar = true;
                     }
                 }
             }
-            // desenho do menu
-            desenha_menu(opcao, nome_jogador, ult_pont);
+            desenha_menu(menu_option, nome_jogador, ult_pont);
         }
         else
         {
-            // fechar o jogo ao clicar no X
             if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
             {
                 fechar = true;
             }
-            // atualização do jogo
             else if (ev.type == ALLEGRO_EVENT_TIMER)
             {
                 dentro_menu = false;
                 redraw = true;
 
-                // movimentação das setas
                 for (int i = 0; i < MAX_INIMIGOS; i++)
                 {
-                    setas[i]->x -= (int)vel_inim;
+                    setas[i].x -= (int)vel_inim;
 
-                    if (setas[i]->x + TAM_SETA < 0)
+                    if (setas[i].x + TAM_SETA < 0)
                     {
                         vidas--;
-                        free(setas[i]);
-                        setas[i] = desenfileirar(fila_setas);
                         setas[i] = criar_seta(LARGURA, ALTURA / 2 - TAM_SETA / 2);
                     }
                 }
-                // atualização dos seguntos
+
                 seg++;
                 if (seg > 300)
                 {
@@ -124,60 +117,47 @@ int main()
             }
             else if (ev.type == ALLEGRO_EVENT_KEY_DOWN)
             {
-                // movimentação do jogador
                 switch (ev.keyboard.keycode)
                 {
                 case (ALLEGRO_KEY_ESCAPE):
                     fechar = true;
                     break;
                 case (ALLEGRO_KEY_UP):
-                    direcao = cima;
+                    seta_jogador = 0;
                     break;
                 case (ALLEGRO_KEY_DOWN):
-                    direcao = baixo;
+                    seta_jogador = 1;
                     break;
                 case (ALLEGRO_KEY_RIGHT):
-                    direcao = direita;
+                    seta_jogador = 2;
                     break;
                 case (ALLEGRO_KEY_LEFT):
-                    direcao = esquerda;
+                    seta_jogador = 3;
                     break;
                 }
                 for (int i = 0; i < MAX_INIMIGOS; i++)
                 {
-                    // colisão com as setas
-                    if (setas[i]->x < LARGURA / 2 + TAM_SETA / 2 &&
-                        setas[i]->x > LARGURA / 2 - TAM_SETA / 2 &&
-                        setas[i]->direcao == direcao)
+                    if (setas[i].x < LARGURA / 2 + TAM_SETA / 2 &&
+                        setas[i].x > LARGURA / 2 - TAM_SETA / 2 &&
+                        setas[i].direcao == seta_jogador)
                     {
                         pontuacao += 50;
-                        free(setas[i]);
                         setas[i] = criar_seta(LARGURA, ALTURA / 2 - TAM_SETA / 2);
                     }
-                    else if (setas[i]->x < LARGURA / 2 + TAM_SETA / 2 &&
-                             setas[i]->x > LARGURA / 2 - TAM_SETA / 2 &&
-                             setas[i]->direcao != direcao)
+                    else if (setas[i].x < LARGURA / 2 + TAM_SETA / 2 &&
+                             setas[i].x > LARGURA / 2 - TAM_SETA / 2 &&
+                             setas[i].direcao != seta_jogador)
                     {
                         vidas--;
-                        free(setas[i]);
                         setas[i] = criar_seta(LARGURA, ALTURA / 2 - TAM_SETA / 2);
                     }
                 }
             }
             if (vidas <= 0)
             {
-                // tela final do jogo
-                game_over(pontuacao, nome_jogador);
+                menu_final(pontuacao, nome_jogador);
                 ult_pont = pontuacao;
-                liberar_setas(setas, MAX_INIMIGOS);
-
-                // Reiniciar o jogo
-                for (int i = 0; i < MAX_INIMIGOS; i++)
-                {
-                    setas[i] = criar_seta(LARGURA, ALTURA / 2 - TAM_SETA / 2);
-                }
-
-                while (!dentro_menu)
+                while (1)
                 {
                     ALLEGRO_EVENT ev2;
                     al_wait_for_event(fila_eventos, &ev2);
@@ -188,17 +168,28 @@ int main()
                     }
                 }
             }
-            // desenho do jogo
             if (redraw && al_is_event_queue_empty(fila_eventos))
             {
                 redraw = false;
-                desenha_jogo(setas, jogador, direcao, pontuacao, vidas, vel_inim, seta_cima, seta_baixo, seta_direita, seta_esquerda);
+
+                for (int i = 0; i < MAX_INIMIGOS; i++)
+                {
+                    desenha_seta(setas[i], seta_cima, seta_baixo, seta_direita, seta_esquerda);
+                }
+
+                Seta player = {LARGURA / 2 - TAM_SETA / 2, ALTURA / 2 - TAM_SETA / 2, seta_jogador};
+                desenha_seta(player, seta_cima, seta_baixo, seta_direita, seta_esquerda);
+
+                al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), 10, 10, 0, "Pontuação: %d", pontuacao);
+                al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), LARGURA - 150, 10, 0, "Vidas: %d", vidas);
+                al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), LARGURA - 150, 30, 0, "Velocidade: %.2f", vel_inim);
+
+                al_flip_display();
+                al_clear_to_color(al_map_rgb(192, 192, 192));
+                al_draw_filled_rectangle(0, 355, LARGURA, 270, al_map_rgb(128, 128, 128));
             }
         }
     }
-    // liberação dos recursos
-    liberar_fila(fila_setas);
-    liberar_setas(setas, MAX_INIMIGOS);
     finaliza_recursos(janela, fila_eventos, timer, seta_cima, seta_baixo, seta_direita, seta_esquerda);
     return 0;
 }

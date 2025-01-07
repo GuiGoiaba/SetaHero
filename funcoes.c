@@ -39,7 +39,7 @@ Seta *desenfileirar(Fila *fila)
     Lista *temp = fila->inicio;
     Seta *seta = temp->seta;
     fila->inicio = fila->inicio->proximo;
-    
+
     if (fila->inicio == NULL)
     {
         fila->fim = NULL;
@@ -52,7 +52,8 @@ void liberar_fila(Fila *fila)
 {
     while (!fila)
     {
-        desenfileirar(fila);
+        Seta *seta = desenfileirar(fila);
+        free(seta);
     }
     free(fila);
 }
@@ -85,10 +86,19 @@ Seta *criar_jogador(int x, int y, int direcao)
     return seta_jogador;
 }
 
-void libera_seta(Seta *seta){
-    free(seta);
+void liberar_setas(Seta **setas, int max_inimigos)
+{
+    for (int i = 0; i < max_inimigos; i++)
+    {
+        if (setas[i] != NULL)
+        {
+            free(setas[i]);
+            setas[i] = NULL;
+        }
+    }
 }
 
+// inicialização da janela
 ALLEGRO_DISPLAY *cria_tela()
 {
     ALLEGRO_DISPLAY *janela = al_create_display(LARGURA, ALTURA);
@@ -100,6 +110,7 @@ ALLEGRO_DISPLAY *cria_tela()
     return janela;
 }
 
+// funções de inicialização
 void inicializa_allegro()
 {
     if (!al_init())
@@ -114,6 +125,7 @@ void inicializa_allegro()
     al_init_ttf_addon();
 }
 
+// carregamento dos bitmaps
 void inicializa_recursos(ALLEGRO_BITMAP **seta_cima, ALLEGRO_BITMAP **seta_baixo, ALLEGRO_BITMAP **seta_direita, ALLEGRO_BITMAP **seta_esquerda)
 {
     *seta_cima = al_load_bitmap("Assets/seta_cima.png");
@@ -127,6 +139,7 @@ void inicializa_recursos(ALLEGRO_BITMAP **seta_cima, ALLEGRO_BITMAP **seta_baixo
     }
 }
 
+// configuração dos eventos
 void configura_eventos(ALLEGRO_EVENT_QUEUE *fila_eventos, ALLEGRO_DISPLAY *janela, ALLEGRO_TIMER *timer)
 {
     al_register_event_source(fila_eventos, al_get_display_event_source(janela));
@@ -135,6 +148,7 @@ void configura_eventos(ALLEGRO_EVENT_QUEUE *fila_eventos, ALLEGRO_DISPLAY *janel
     al_start_timer(timer);
 }
 
+// inicialização do jogo
 void inicializa_jogo(ALLEGRO_DISPLAY **janela, ALLEGRO_BITMAP **seta_cima, ALLEGRO_BITMAP **seta_baixo, ALLEGRO_BITMAP **seta_direita, ALLEGRO_BITMAP **seta_esquerda, ALLEGRO_EVENT_QUEUE **fila_eventos, ALLEGRO_TIMER **timer)
 {
     *janela = cria_tela();
@@ -146,6 +160,7 @@ void inicializa_jogo(ALLEGRO_DISPLAY **janela, ALLEGRO_BITMAP **seta_cima, ALLEG
     printf("espero que goste :D\n");
 }
 
+// desenho do menu
 void desenha_menu(int escolha, const char *nome_jogador, int ult_pont)
 {
     ALLEGRO_FONT *fonte = al_create_builtin_font();
@@ -176,16 +191,17 @@ void desenha_menu(int escolha, const char *nome_jogador, int ult_pont)
     al_flip_display();
 }
 
+// inserção do nome do jogador
 void insere_nome(char *nome_jogador)
 {
-    ALLEGRO_FONT *fonte = (ALLEGRO_FONT *)malloc(sizeof(ALLEGRO_FONT *));
+    ALLEGRO_FONT *fonte;
     fonte = al_create_builtin_font();
     al_clear_to_color(al_map_rgb(192, 192, 192));
 
     al_draw_text(fonte, al_map_rgb(0, 0, 0), LARGURA / 2, ALTURA / 3, ALLEGRO_ALIGN_CENTRE, "Digite seu nome:");
     al_flip_display();
 
-    ALLEGRO_EVENT_QUEUE *input_teclado = (ALLEGRO_EVENT_QUEUE *)malloc(sizeof(ALLEGRO_EVENT_QUEUE *));
+    ALLEGRO_EVENT_QUEUE *input_teclado;
     input_teclado = al_create_event_queue();
     al_register_event_source(input_teclado, al_get_keyboard_event_source());
 
@@ -194,6 +210,7 @@ void insere_nome(char *nome_jogador)
 
     while (!cabou)
     {
+        // captura de eventos
         ALLEGRO_EVENT ev;
         al_wait_for_event(input_teclado, &ev);
         if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
@@ -225,9 +242,8 @@ void insere_nome(char *nome_jogador)
     al_destroy_event_queue(input_teclado);
 }
 
-void desenha_jogo(Seta *setas[], int direcao, int pontuacao, int vidas, float vel_inim, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_baixo, ALLEGRO_BITMAP *seta_direita, ALLEGRO_BITMAP *seta_esquerda)
+void desenha_jogo(Seta *setas[], Seta *jogador, int direcao, int pontuacao, int vidas, float vel_inim, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_baixo, ALLEGRO_BITMAP *seta_direita, ALLEGRO_BITMAP *seta_esquerda)
 {
-    Seta *jogador = (Seta *)malloc(sizeof(Seta *));
     jogador = criar_jogador(LARGURA / 2 - TAM_SETA / 2, (ALTURA / 2) - TAM_SETA / 2, direcao);
     desenha_seta(jogador, seta_cima, seta_baixo, seta_direita, seta_esquerda);
     for (int i = 0; i < MAX_INIMIGOS; i++)
@@ -240,12 +256,10 @@ void desenha_jogo(Seta *setas[], int direcao, int pontuacao, int vidas, float ve
     al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), 10, 10, 0, "Pontuação: %d", pontuacao);
     al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), LARGURA - 150, 10, 0, "Vidas: %d", vidas);
     al_draw_textf(al_create_builtin_font(), al_map_rgb(0, 0, 0), LARGURA - 150, 30, 0, "Velocidade: %.2f", vel_inim);
-    free(jogador);
 }
 
 void desenha_seta(Seta *seta, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_baixo, ALLEGRO_BITMAP *seta_direita, ALLEGRO_BITMAP *seta_esquerda)
 {
-    enum teclas{cima, baixo, direita, esquerda};
     switch (seta->direcao)
     {
     case cima: // Cima
@@ -263,7 +277,7 @@ void desenha_seta(Seta *seta, ALLEGRO_BITMAP *seta_cima, ALLEGRO_BITMAP *seta_ba
     }
 }
 
-void pont_jogador(int pontuacao, char *nome_jogador)
+void game_over(int pontuacao, char *nome_jogador)
 {
     ALLEGRO_FONT *fonte = al_create_builtin_font();
     al_clear_to_color(al_map_rgb(192, 192, 192));
