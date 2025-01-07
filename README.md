@@ -18,15 +18,6 @@ gcc -c funcoes.c
 gcc -o SetaHero main.c funcoes.o -lallegro -lallegro_primitives -lallegro_image -lallegro_ttf -lallegro_font
 ```
 
-## Explicação para todos os blocos do código
-[[INICIALIZAÇÃO DOS RECURSOS]]
-[[INICIALIZAÇÃO DO JOGO]]
-[[VARIÁVEIS DO JOGO]]
-[[CRIAÇÃO DAS SETAS]]
-[[LOOP PRINCIPAL]]
-[[MENU]]
-[[MOVIMENTO DAS SETAS]]
-[[MOVIMENTO DO JOGADOR]]
 [[COLISÃO COM AS SETAS]]
 [[TELA FINAL]]
 [[DESENHA JOGO]]
