@@ -17,3 +17,8 @@ Se você estiver no Linux ou Mac e tiver o Allegro5 e o gcc instalados, execute 
 gcc -c funcoes.c
 gcc -o SetaHero main.c funcoes.o -lallegro -lallegro_primitives -lallegro_image -lallegro_ttf -lallegro_font
 ```
+## Para jogar
+
+```
+./SetaHero
+```
